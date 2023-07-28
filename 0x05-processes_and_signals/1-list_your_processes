@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# Display header
+echo "USER       PID  PPID  %CPU  %MEM     VSZ    RSS  TTY      STAT START   TIME  COMMAND"
+
+# Get the list of all processes and display them in a user-oriented format
+ps axo user,pid,ppid,%cpu,%mem,vsz,rss,tty,stat,start,time,command --forest
+
