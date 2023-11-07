@@ -1,45 +1,29 @@
 #!/usr/bin/python3
 """
-Function that queries the Reddit API and prints
-the top ten hot posts of a subreddit
+recursive function that queries the Reddit API and returns a list
+containing the titles of all hot articles for a given subreddit
 """
 import requests
-import sys
 
 
-def add_title(hot_list, hot_posts):
-    """ Adds item into a list """
-    if len(hot_posts) == 0:
-        return
-    hot_list.append(hot_posts[0]['data']['title'])
-    hot_posts.pop(0)
-    add_title(hot_list, hot_posts)
-
-
-def recurse(subreddit, hot_list=[], after=None):
-    """ Queries to Reddit API """
-    u_agent = 'Mozilla/5.0'
+def recurse(subreddit, hot_list=[], count=0, next_page=None):
+    """return list containing titles of all hot articles"""
     headers = {
-        'User-Agent': u_agent
+        "User-Agent": "0x16. API_advanced-e_kiminza"
     }
-
-    params = {
-        'after': after
-    }
-
-    url = "https://www.reddit.com/r/{}/hot.json".format(subreddit)
-    res = requests.get(url,
-                       headers=headers,
-                       params=params,
-                       allow_redirects=False)
-
-    if res.status_code != 200:
+    url = "https://www.reddit.com/r/{}/hot/.json".format(subreddit)
+    params = {"limit": 50, "next_page": next_page, "count": count}
+    response = requests.get(url, headers=headers,
+                            params=params, allow_redirects=False)
+    if response.status_code != 200:
         return None
-
-    dic = res.json()
-    hot_posts = dic['data']['children']
-    add_title(hot_list, hot_posts)
-    after = dic['data']['after']
-    if not after:
-        return hot_list
-    return recurse(subreddit, hot_list=hot_list, after=after)
+    response_ = response.json().get("data")
+    next_page = response_.get("next_page")
+    count += response_.get("dist")
+    children = response_.get("children")
+    for child in children:
+        title = child.get("data").get("title")
+        hot_list.append(title)
+    if next_page is not None:
+        return recurse(subreddit, hot_list, count, next_page)
+    return hot_list
